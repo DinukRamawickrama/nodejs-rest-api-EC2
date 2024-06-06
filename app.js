@@ -2,9 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const connectDB = require("./db/db");
+const connectDB = require("./db/firebase"); 
 const errorHandler = require("./middlewares/errorhandler");
-const userRoutes = require("./routes/userRoutes");
+const userRoutes = require("./routes/userroutes");
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 //connect to the database
-connectDB();
+connectDB(); // This should initialize your Firebase connection
 
 //routes
 app.use("/api/users", userRoutes);
