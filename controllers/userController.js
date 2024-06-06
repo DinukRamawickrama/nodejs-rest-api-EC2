@@ -1,4 +1,5 @@
-const User = require("../models/user");
+const db = require("../firebase");
+const User = db.collection("users");
 
 const createNewUser = async (req, res, next) => {
   try {
@@ -8,22 +9,24 @@ const createNewUser = async (req, res, next) => {
       return next(new Error("name & email fields are required"));
     }
 
-    // check if user already exists
-    const isUserExists = await User.findOne({ email });
+    // Check if user already exists
+    const userSnapshot = await User.where('email', '==', email).get();
 
-    if (isUserExists) {
+    if (!userSnapshot.empty) {
       res.status(404);
       return next(new Error("User already exists"));
     }
 
-    const user = await User.create({
+    const userRef = await User.add({
       name,
       email,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
     res.status(200).json({
       success: true,
-      user,
+      user: { id: userRef.id, name, email },
       message: "User created successfully",
     });
   } catch (error) {
@@ -34,7 +37,12 @@ const createNewUser = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find();
+    const userSnapshot = await User.get();
+    const users = [];
+
+    userSnapshot.forEach(doc => {
+      users.push({ id: doc.id, ...doc.data() });
+    });
 
     res.status(200).json({
       success: true,
